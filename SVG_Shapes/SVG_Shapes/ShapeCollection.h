@@ -19,12 +19,17 @@ public:
 	ShapeCollection& operator=(const ShapeCollection&);
 	~ShapeCollection();
 
-	void addRectangle(double, double, double, double);
-	void addCircle(double, double, double);
-	void addLine(double, double, double, double);
+	void addRectangle(double, double, double, double, const char*);
+	void addCircle(double, double, double, const char*);
+	void addLine(double, double, double, double, const char*);
+
+	bool deleteAt(size_t);
+
+	void print() const;
+	void printAreas() const;
+	void printPerimeters() const;
 
 	double getPerOfFigureByIndex(size_t) const;
 	double getAreaOfFigureByIndex(size_t) const;
 	double getIfPointInShapeByIndex(size_t, int, int) const;
-
 };

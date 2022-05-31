@@ -66,21 +66,71 @@ void ShapeCollection::addShape(Shape* shape)
 	shapes[shapesCount++] = shape;
 }
 
-void ShapeCollection::addRectangle(double x1, double y1, double x3, double y3)
+void ShapeCollection::addRectangle(double x1, double y1, double x3, double y3, const char* fill)
 {
-	Rectangle* rect = new Rectangle(x1, y1, x3, y3);
+	Rectangle* rect = new Rectangle(x1, y1, x3, y3, fill);
 	addShape(rect);
 }
-void ShapeCollection::addCircle(double x1, double y1, double r)
+void ShapeCollection::addCircle(double x1, double y1, double r, const char* fill)
 {
-	Circle* circle = new Circle(x1, y1, r);
+	Circle* circle = new Circle(x1, y1, r, fill);
 	addShape(circle);
 }
 
-void ShapeCollection::addLine(double x1, double y1, double x2, double y2)
+void ShapeCollection::addLine(double x1, double y1, double x2, double y2, const char* fill)
 {
-	Line* l = new Line(x1, y1, x2, y2);
+	Line* l = new Line(x1, y1, x2, y2, fill);
 	addShape(l);
+}
+
+bool ShapeCollection::deleteAt(size_t index)
+{
+	if (index >= shapesCount)
+		return false;
+
+	delete shapes[index];
+	shapes[index] = nullptr;
+	
+	return true;
+}
+
+void ShapeCollection::print() const
+{
+	for (int i = 0; i < shapesCount; i++)
+	{
+		if (shapes[i] == nullptr)
+			continue;
+
+		std::cout << i << " ";
+		shapes[i]->print();
+		std::cout << std::endl;
+	}
+}
+
+void ShapeCollection::printAreas() const
+{
+	for (int i = 0; i < shapesCount; i++)
+	{
+		if (shapes[i] == nullptr)
+			continue;
+
+		std::cout << i << " ";
+		shapes[i]->getArea();
+		std::cout << std::endl;
+	}
+}
+
+void ShapeCollection::printPerimeters() const
+{
+	for (int i = 0; i < shapesCount; i++)
+	{
+		if (shapes[i] == nullptr)
+			continue;
+
+		std::cout << i << " ";
+		shapes[i]->getPer();
+		std::cout << std::endl;
+	}
 }
 
 double ShapeCollection::getPerOfFigureByIndex(size_t ind) const

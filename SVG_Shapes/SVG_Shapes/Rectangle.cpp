@@ -1,11 +1,11 @@
 #include "Rectangle.h"
 
-Rectangle::Rectangle(double x1, double y1, double x3, double y3) : Shape(4)
+Rectangle::Rectangle(double x1, double y1, double width, double height, const char* fill) : Shape(4, fill)
 {
 	setPoint(0, x1, y1);
-	setPoint(1, x1, y3);
-	setPoint(2, x3, y3);
-	setPoint(3, x3, y1);
+	setPoint(1, x1 + width, y1);
+	setPoint(2, x1 + width, y1 + height);
+	setPoint(3, x1, y1 + width);
 }
 double Rectangle::getArea() const
 {
@@ -34,4 +34,19 @@ bool Rectangle::isPointIn(double x, double y) const
 Shape* Rectangle::clone() const
 {
 	return new Rectangle(*this);
+}
+
+void Rectangle::print() const
+{
+	std::cout << "rectangle " << getPointAtIndex(0).x << " " << getPointAtIndex(0).y << " ";
+	std::cout << getPointAtIndex(1).x - getPointAtIndex(0).x << " " << getPointAtIndex(3).y - getPointAtIndex(0).y << " ";
+	Shape::print();
+}
+
+void Rectangle::translate(double vertical, double horizontal)
+{
+	setPointAtIndex(0, getPointAtIndex(0).x + horizontal, getPointAtIndex(0).y + vertical);
+	setPointAtIndex(1, getPointAtIndex(1).x + horizontal, getPointAtIndex(1).y + vertical);
+	setPointAtIndex(2, getPointAtIndex(2).x + horizontal, getPointAtIndex(2).y + vertical);
+	setPointAtIndex(3, getPointAtIndex(3).x + horizontal, getPointAtIndex(3).y + vertical);
 }

@@ -1,5 +1,7 @@
 #pragma once
 #include <iostream>
+#include <cstring>
+#pragma warning(disable:4996)
 
 class Shape
 {
@@ -19,16 +21,19 @@ protected:
 		}
 	};
 	const point& getPointAtIndex(size_t) const;
+	void setPointAtIndex(size_t, double, double);
 
 private:
 	point* points;
 	size_t pointsCount;
 
+	char* fill;
+
 	void copy(const Shape&);
 	void free();
 
 public:
-	Shape(size_t);
+	Shape(size_t, const char*);
 
 	Shape(const Shape&);
 	Shape& operator=(const Shape&);
@@ -39,6 +44,10 @@ public:
 	virtual double getArea() const = 0;
 	virtual double getPer()  const = 0;
 	virtual bool isPointIn(double, double) const = 0;
+
+	virtual void print() const;
+
+	virtual void translate(double, double) = 0;
 
 	virtual Shape* clone() const = 0;
 };

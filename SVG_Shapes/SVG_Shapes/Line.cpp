@@ -1,6 +1,6 @@
 #include "Line.h"
 
-Line::Line(double x1, double y1, double x2, double y2) : Shape(2)
+Line::Line(double x1, double y1, double x2, double y2, const char* fill) : Shape(2, fill)
 {
 	setPoint(0, x1, y1);
 	setPoint(1, x2, y2);
@@ -40,7 +40,21 @@ bool Line::isPointIn(double x, double y) const
 
 	return false;
 }
+
 Shape* Line::clone() const
 {
 	return new Line(*this);
+}
+
+void Line::print() const
+{
+	std::cout << "line " << getPointAtIndex(0).x << " " << getPointAtIndex(0).y <<
+		getPointAtIndex(1).x << " " << getPointAtIndex(1).y << " ";
+	Shape::print();
+}
+
+void Line::translate(double vertical, double horizontal)
+{
+	setPointAtIndex(0, getPointAtIndex(0).x + horizontal, getPointAtIndex(0).y + vertical);
+	setPointAtIndex(1, getPointAtIndex(1).x + horizontal, getPointAtIndex(1).y + vertical);
 }

@@ -4,12 +4,16 @@
 class Line : public Shape
 {
 public:
-	Line(double, double, double, double);
+	Line(double, double, double, double, const char*);
 
 	double getArea() const override;
 	double getPer() const override;
 	double getLength() const;
 	bool isPointIn(double, double) const override;
+
+	void print() const override;
+
+	void translate(double, double) override;
 
 	Shape* clone() const override;
 };
