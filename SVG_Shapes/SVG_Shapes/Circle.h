@@ -21,4 +21,5 @@ public:
 	bool withinCircle(double, double, double) const override;
 
 	Shape* clone() const override;
+	void writeSvgTag(std::ofstream&) const override;
 };

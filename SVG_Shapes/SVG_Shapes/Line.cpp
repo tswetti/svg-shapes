@@ -48,8 +48,8 @@ Shape* Line::clone() const
 
 void Line::print() const
 {
-	std::cout << "line " << getPointAtIndex(0).x << " " << getPointAtIndex(0).y <<
-		getPointAtIndex(1).x << " " << getPointAtIndex(1).y << " ";
+	std::cout << "line " << getPointAtIndex(0).x << " " << getPointAtIndex(0).y << " ";
+	std::cout << getPointAtIndex(1).x << " " << getPointAtIndex(1).y << " ";
 	Shape::print();
 }
 
@@ -73,4 +73,15 @@ bool Line::withinCircle(double x, double y, double radius) const
 
 	return c.isPointIn(getPointAtIndex(0).x, getPointAtIndex(0).y) &&
 		c.isPointIn(getPointAtIndex(1).x, getPointAtIndex(1).y);
+}
+
+void Line::writeSvgTag(std::ofstream& ofs) const
+{
+	const char* fill = getFill();
+	ofs << " <line x1=\"" << getPointAtIndex(0).x << "\" y1=\"" << getPointAtIndex(0).y << "\"";
+	ofs << " x2=\"" << getPointAtIndex(1).x << "\"";
+	ofs << " y2=\"" << getPointAtIndex(1).y << "\"";
+	ofs << " fill=\"" << fill << "\" />" << std::endl;
+
+	delete[] fill;
 }

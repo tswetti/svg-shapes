@@ -1,5 +1,6 @@
 #pragma once
 #include "Shape.h"
+#include <fstream>
 
 class ShapeCollection
 {
@@ -15,9 +16,14 @@ class ShapeCollection
 
 public:
 	ShapeCollection();
+	ShapeCollection(std::ifstream&);
 	ShapeCollection(const ShapeCollection&);
 	ShapeCollection& operator=(const ShapeCollection&);
 	~ShapeCollection();
+
+	bool rectFromTag(const char*);
+	bool circleFromTag(const char*);
+	bool lineFromTag(const char*);
 
 	void addRectangle(double, double, double, double, const char*);
 	void addCircle(double, double, double, const char*);
@@ -37,4 +43,8 @@ public:
 	double getPerOfFigureByIndex(size_t) const;
 	double getAreaOfFigureByIndex(size_t) const;
 	double getIfPointInShapeByIndex(size_t, int, int) const;
+
+	void save(const char*) const;
 };
+
+int convertToInt(char a[1000]);

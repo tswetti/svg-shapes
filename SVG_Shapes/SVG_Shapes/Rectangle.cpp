@@ -7,6 +7,7 @@ Rectangle::Rectangle(double x1, double y1, double width, double height, const ch
 	setPoint(2, x1 + width, y1 + height);
 	setPoint(3, x1, y1 + height);
 }
+
 double Rectangle::getArea() const
 {
 	Shape::point p0 = getPointAtIndex(0);
@@ -72,4 +73,15 @@ bool Rectangle::withinCircle(double x, double y, double radius) const
 		c.isPointIn(getPointAtIndex(1).x, getPointAtIndex(1).y) &&
 		c.isPointIn(getPointAtIndex(2).x, getPointAtIndex(2).y) &&
 		c.isPointIn(getPointAtIndex(3).x, getPointAtIndex(3).y);
+}
+
+void Rectangle::writeSvgTag(std::ofstream& ofs) const
+{
+	const char* fill = getFill();
+	ofs << " <rect x=\"" << getPointAtIndex(0).x << "\" y=\"" << getPointAtIndex(0).y << "\"";
+	ofs << " width=\"" << getPointAtIndex(1).x - getPointAtIndex(0).x << "\"";
+	ofs << " height=\"" << getPointAtIndex(3).y - getPointAtIndex(0).y << "\"";
+	ofs << " fill=\"" << fill << "\" />" << std::endl;
+
+	delete[] fill;
 }

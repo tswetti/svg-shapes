@@ -3,9 +3,7 @@
 Shape::Shape(size_t pointsCount, const char* fill) : pointsCount(pointsCount)
 {
 	points = new point[pointsCount];
-
-	this->fill = new char[strlen(fill) + 1];
-	strcpy(this->fill, fill);
+	setFill(fill);
 }
 
 void Shape::copy(const Shape& other)
@@ -17,8 +15,7 @@ void Shape::copy(const Shape& other)
 
 	pointsCount = other.pointsCount;
 
-	this->fill = new char[strlen(other.fill) + 1];
-	strcpy(fill, other.fill);
+	setFill(other.fill);
 }
 void Shape::free()
 {
@@ -61,6 +58,12 @@ void Shape::setPointAtIndex(size_t index, double x, double y)
 	points[index].y = y;
 }
 
+void Shape::setFill(const char* fill)
+{
+	this->fill = new char[strlen(fill) + 1];
+	strcpy(this->fill, fill);
+}
+
 void Shape::setPoint(size_t pointIndex, double x, double y)
 {
 	if (pointIndex >= pointsCount)
@@ -72,4 +75,9 @@ void Shape::setPoint(size_t pointIndex, double x, double y)
 void Shape::print() const
 {
 	std::cout << fill;
+}
+
+const char* Shape::getFill() const
+{
+	return fill;
 }
