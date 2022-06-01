@@ -14,8 +14,8 @@ protected:
 		double y;
 		double getDist(const point& other) const
 		{
-			int dx = x - other.x;
-			int dy = y - other.y;
+			double dx = x - other.x;
+			double dy = y - other.y;
 
 			return sqrt(dx * dx + dy * dy);
 		}
@@ -48,6 +48,9 @@ public:
 	virtual void print() const;
 
 	virtual void translate(double, double) = 0;
+
+	virtual bool withinRectangle(double, double, double, double) const = 0;
+	virtual bool withinCircle(double, double, double) const = 0;
 
 	virtual Shape* clone() const = 0;
 };

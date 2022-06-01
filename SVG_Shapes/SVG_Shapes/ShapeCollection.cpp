@@ -101,7 +101,7 @@ void ShapeCollection::print() const
 		if (shapes[i] == nullptr)
 			continue;
 
-		std::cout << i << " ";
+		std::cout << i + 1 << ". ";
 		shapes[i]->print();
 		std::cout << std::endl;
 	}
@@ -114,7 +114,7 @@ void ShapeCollection::printAreas() const
 		if (shapes[i] == nullptr)
 			continue;
 
-		std::cout << i << " ";
+		std::cout << i + 1 << ". ";
 		shapes[i]->getArea();
 		std::cout << std::endl;
 	}
@@ -127,9 +127,57 @@ void ShapeCollection::printPerimeters() const
 		if (shapes[i] == nullptr)
 			continue;
 
-		std::cout << i << " ";
+		std::cout << i + 1 << ". ";
 		shapes[i]->getPer();
 		std::cout << std::endl;
+	}
+}
+
+void ShapeCollection::printWithinRectangle(double x, double y, double width, double height) const
+{
+	bool any = false;
+	for (int i = 0; i < shapesCount; i++)
+	{
+		if (shapes[i] == nullptr)
+			continue;
+
+		if (shapes[i]->withinRectangle(x, y, width, height))
+		{
+			any = true;
+			std::cout << i + 1 << ". ";
+			shapes[i]->print();
+			std::cout << std::endl;
+		}
+	}
+
+	if (!any)
+		std::cout << "No figures are within " << x << " " << y << " " << width << " " << height << std::endl;
+}
+
+void ShapeCollection::printWithinCircle(double x, double y, double radius) const
+{
+	for (int i = 0; i < shapesCount; i++)
+	{
+		if (shapes[i] == nullptr)
+			continue;
+
+		if (shapes[i]->withinCircle(x, y, radius))
+		{
+			std::cout << i + 1 << ". ";
+			shapes[i]->print();
+			std::cout << std::endl;
+		}
+	}
+}
+
+void ShapeCollection::translate(double vertical, double horizontal)
+{
+	for (int i = 0; i < shapesCount; i++)
+	{
+		if (shapes[i] == nullptr)
+			continue;
+
+		shapes[i]->translate(vertical, horizontal);
 	}
 }
 

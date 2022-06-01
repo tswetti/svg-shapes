@@ -29,6 +29,11 @@ public:
 	void printAreas() const;
 	void printPerimeters() const;
 
+	void printWithinRectangle(double, double, double, double) const;
+	void printWithinCircle(double, double, double) const;
+
+	void translate(double, double);
+
 	double getPerOfFigureByIndex(size_t) const;
 	double getAreaOfFigureByIndex(size_t) const;
 	double getIfPointInShapeByIndex(size_t, int, int) const;

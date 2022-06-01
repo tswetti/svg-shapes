@@ -5,7 +5,7 @@ Rectangle::Rectangle(double x1, double y1, double width, double height, const ch
 	setPoint(0, x1, y1);
 	setPoint(1, x1 + width, y1);
 	setPoint(2, x1 + width, y1 + height);
-	setPoint(3, x1, y1 + width);
+	setPoint(3, x1, y1 + height);
 }
 double Rectangle::getArea() const
 {
@@ -28,8 +28,11 @@ double Rectangle::getPer() const
 bool Rectangle::isPointIn(double x, double y) const
 {
 	Shape::point p(x, y);
-	return p.x >= getPointAtIndex(0).x && p.y >= getPointAtIndex(1).x &&
-		p.y <= getPointAtIndex(0).y && p.y >= getPointAtIndex(2).y;
+	//std::cout << p.x << " " << getPointAtIndex(0).x << " ";
+	bool test = p.x >= getPointAtIndex(0).x && p.x <= getPointAtIndex(1).x &&
+		p.y >= getPointAtIndex(0).y && p.y <= getPointAtIndex(2).y;
+	//std::cout << test;
+	return test;
 }
 Shape* Rectangle::clone() const
 {
@@ -49,4 +52,24 @@ void Rectangle::translate(double vertical, double horizontal)
 	setPointAtIndex(1, getPointAtIndex(1).x + horizontal, getPointAtIndex(1).y + vertical);
 	setPointAtIndex(2, getPointAtIndex(2).x + horizontal, getPointAtIndex(2).y + vertical);
 	setPointAtIndex(3, getPointAtIndex(3).x + horizontal, getPointAtIndex(3).y + vertical);
+}
+
+bool Rectangle::withinRectangle(double x, double y, double width, double height) const
+{
+	Rectangle rect(x, y, width, height, "black");
+
+	return rect.isPointIn(getPointAtIndex(0).x, getPointAtIndex(0).y) &&
+		rect.isPointIn(getPointAtIndex(1).x, getPointAtIndex(1).y) &&
+		rect.isPointIn(getPointAtIndex(2).x, getPointAtIndex(2).y) &&
+		rect.isPointIn(getPointAtIndex(3).x, getPointAtIndex(3).y);
+}
+
+bool Rectangle::withinCircle(double x, double y, double radius) const
+{
+	Circle c(x, y, radius, "black");
+
+	return c.isPointIn(getPointAtIndex(0).x, getPointAtIndex(0).y) &&
+		c.isPointIn(getPointAtIndex(1).x, getPointAtIndex(1).y) &&
+		c.isPointIn(getPointAtIndex(2).x, getPointAtIndex(2).y) &&
+		c.isPointIn(getPointAtIndex(3).x, getPointAtIndex(3).y);
 }

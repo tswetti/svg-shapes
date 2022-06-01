@@ -58,3 +58,19 @@ void Line::translate(double vertical, double horizontal)
 	setPointAtIndex(0, getPointAtIndex(0).x + horizontal, getPointAtIndex(0).y + vertical);
 	setPointAtIndex(1, getPointAtIndex(1).x + horizontal, getPointAtIndex(1).y + vertical);
 }
+
+bool Line::withinRectangle(double x, double y, double width, double height) const
+{
+	Rectangle rect(x, y, width, height, "black");
+
+	return rect.isPointIn(getPointAtIndex(0).x, getPointAtIndex(0).y) &&
+		rect.isPointIn(getPointAtIndex(1).x, getPointAtIndex(1).y);
+}
+
+bool Line::withinCircle(double x, double y, double radius) const
+{
+	Circle c(x, y, radius, "black");
+
+	return c.isPointIn(getPointAtIndex(0).x, getPointAtIndex(0).y) &&
+		c.isPointIn(getPointAtIndex(1).x, getPointAtIndex(1).y);
+}
