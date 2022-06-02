@@ -3,7 +3,8 @@
 Shape::Shape(size_t pointsCount, const char* fill) : pointsCount(pointsCount)
 {
 	points = new point[pointsCount];
-	setFill(fill);
+	this->fill = new char[strlen(fill) + 1];
+	strcpy(this->fill, fill);
 }
 
 void Shape::copy(const Shape& other)
@@ -15,7 +16,8 @@ void Shape::copy(const Shape& other)
 
 	pointsCount = other.pointsCount;
 
-	setFill(other.fill);
+	fill = new char[strlen(other.fill) + 1];
+	strcpy(fill, other.fill);
 }
 void Shape::free()
 {
@@ -60,6 +62,7 @@ void Shape::setPointAtIndex(size_t index, double x, double y)
 
 void Shape::setFill(const char* fill)
 {
+	delete[] this->fill;
 	this->fill = new char[strlen(fill) + 1];
 	strcpy(this->fill, fill);
 }

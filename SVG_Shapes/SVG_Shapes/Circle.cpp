@@ -57,10 +57,7 @@ bool Circle::withinCircle(double x, double y, double radius) const
 
 void Circle::writeSvgTag(std::ofstream& ofs) const
 {
-	const char* fill = getFill();
 	ofs << " <circle cx=\"" << getPointAtIndex(0).x << "\" cy=\"" << getPointAtIndex(0).y << "\"";
 	ofs << " r=\"" << radius << "\"";
-	ofs << " fill=\"" << fill << "\" />" << std::endl;
-
-	delete[] fill;
+	ofs << " fill=\"" << getFill() << "\" />" << std::endl;
 }

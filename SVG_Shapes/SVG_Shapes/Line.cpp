@@ -8,7 +8,6 @@ Line::Line(double x1, double y1, double x2, double y2, const char* fill) : Shape
 double Line::getArea() const
 {
 	return 0;
-
 }
 double Line::getPer() const
 {
@@ -29,12 +28,12 @@ bool Line::isPointIn(double x, double y) const
 		return false;
 
 	if ((getPointAtIndex(0).y > getPointAtIndex(1).y) &&
-		(y < getPointAtIndex(0).y || y > getPointAtIndex(1).y) ||
+		(y > getPointAtIndex(0).y || y < getPointAtIndex(1).y) ||
 		(getPointAtIndex(0).y < getPointAtIndex(1).y) &&
-		(y > getPointAtIndex(0).y || y < getPointAtIndex(1).y))
+		(y < getPointAtIndex(0).y || y > getPointAtIndex(1).y))
 		return false;
 
-	if ((x * getPointAtIndex(0).y * 1 + getPointAtIndex(0).x + getPointAtIndex(1).y * 1 + y * 1 * getPointAtIndex(1).x
+	if ((x * getPointAtIndex(0).y * 1 + getPointAtIndex(0).x * getPointAtIndex(1).y * 1 + y * 1 * getPointAtIndex(1).x
 		- 1 * getPointAtIndex(0).y * getPointAtIndex(1).x - y * getPointAtIndex(0).x * 1 - x * getPointAtIndex(1).y * 1) == 0)
 		return true;
 
@@ -77,11 +76,8 @@ bool Line::withinCircle(double x, double y, double radius) const
 
 void Line::writeSvgTag(std::ofstream& ofs) const
 {
-	const char* fill = getFill();
 	ofs << " <line x1=\"" << getPointAtIndex(0).x << "\" y1=\"" << getPointAtIndex(0).y << "\"";
 	ofs << " x2=\"" << getPointAtIndex(1).x << "\"";
 	ofs << " y2=\"" << getPointAtIndex(1).y << "\"";
-	ofs << " fill=\"" << fill << "\" />" << std::endl;
-
-	delete[] fill;
+	ofs << " fill=\"" << getFill() << "\" />" << std::endl;
 }

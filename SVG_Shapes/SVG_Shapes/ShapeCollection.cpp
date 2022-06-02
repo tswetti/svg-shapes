@@ -1,4 +1,5 @@
 #include "ShapeCollection.h"
+#include "app.h"
 #include <stdexcept>      // std::out_of_range
 #include "Rectangle.h"
 #include "Circle.h"
@@ -41,7 +42,53 @@ ShapeCollection::ShapeCollection()
 	shapes = new Shape * [capacity];
 }
 
-ShapeCollection::ShapeCollection(std::ifstream& ifs)
+void ShapeCollection::addFromFile(std::ifstream& ifs)
+{
+	bool isSvgTag = false;
+	while (ifs.good())
+	{
+		char buff[1024];
+		ifs.getline(buff, 1024);
+
+		if (buff[0] == '<' && buff[1] == 's' && buff[2] == 'v' && buff[3] == 'g' && buff[4] == '>')
+		{
+			isSvgTag = true;
+			continue;
+		}
+
+		if (buff[0] == '<' && buff[1] == '/' && buff[2] == 's' && buff[3] == 'v' && buff[4] == 'g' && buff[5] == '>')
+			break;
+
+		if (isSvgTag)
+		{
+			char shape[20];
+			int i = 0;
+			int shapeI = 0;
+
+			while (buff[i] == ' ' || buff[i] == '\t')
+				i++;
+
+			while (buff[i] != ' ' && buff[i] != '\t' && shapeI < 20)
+				shape[shapeI++] = buff[i++];
+			shape[shapeI] = '\0';
+
+			if (strcmp(shape, "<rect") == 0)
+			{
+				rectFromTag(buff);
+			}
+			else if (strcmp(shape, "<circle") == 0)
+			{
+				circleFromTag(buff);
+			}
+			else if (strcmp(shape, "<line") == 0)
+			{
+				lineFromTag(buff);
+			}
+		}
+	}
+}
+
+/*ShapeCollection::ShapeCollection(std::ifstream& ifs)
 {
 	capacity = 8;
 	shapesCount = 0;
@@ -77,17 +124,22 @@ ShapeCollection::ShapeCollection(std::ifstream& ifs)
 
 			if (strcmp(shape, "<rect") == 0)
 			{
+				std::cout << shapesCount << std::endl;
 				rectFromTag(buff);
 			}
 			else if (strcmp(shape, "<circle") == 0)
 			{
+				std::cout << shapesCount << std::endl;
 				circleFromTag(buff);
 			}
 			else if (strcmp(shape, "<line") == 0)
+			{
+				std::cout << shapesCount << std::endl;
 				lineFromTag(buff);
+			}
 		}
 	}
-}
+}*/
 
 bool ShapeCollection::lineFromTag(const char* tag)
 {
@@ -145,10 +197,10 @@ bool ShapeCollection::lineFromTag(const char* tag)
 		fill[fI++] = tag[i++];
 	fill[fI] = '\0';
 
-	x1 = convertToInt(x1Str);
-	y1 = convertToInt(y1Str);
-	x2 = convertToInt(x2Str);
-	y2 = convertToInt(y2Str);
+	x1 = strToDouble(x1Str);
+	y1 = strToDouble(y1Str);
+	x2 = strToDouble(x2Str);
+	y2 = strToDouble(y2Str);
 
 	addLine(x1, y1, x2, y2, fill);
 	delete[] fill;
@@ -203,9 +255,9 @@ bool ShapeCollection::circleFromTag(const char* tag)
 		fill[fI++] = tag[i++];
 	fill[fI] = '\0';
 
-	x = convertToInt(xStr);
-	y = convertToInt(yStr);
-	radius = convertToInt(radiusStr);
+	x = strToDouble(xStr);
+	y = strToDouble(yStr);
+	radius = strToDouble(radiusStr);
 
 	addCircle(x, y, radius, fill);
 	delete[] fill;
@@ -269,10 +321,10 @@ bool ShapeCollection::rectFromTag(const char* tag)
 		fill[fI++] = tag[i++];
 	fill[fI] = '\0';
 
-	x = convertToInt(xStr);
-	y = convertToInt(yStr);
-	width = convertToInt(widthStr);
-	height = convertToInt(heightStr);
+	x = strToDouble(xStr);
+	y = strToDouble(yStr);
+	width = strToDouble(widthStr);
+	height = strToDouble(heightStr);
 
 	addRectangle(x, y, width, height, fill);
 	delete[] fill;
@@ -313,40 +365,43 @@ ShapeCollection::~ShapeCollection()
 
 void ShapeCollection::addShape(Shape* shape)
 {
-	if (shapesCount == capacity)
+	if (shapesCount >= capacity)
 		resize();
 
-	shapes[shapesCount++] = shape;
+	shapes[shapesCount++] = shape->clone();
 }
 
-void ShapeCollection::addRectangle(double x1, double y1, double x3, double y3, const char* fill)
+void ShapeCollection::addRectangle(double x1, double y1, double width, double height, const char* fill)
 {
-	Rectangle* rect = new Rectangle(x1, y1, x3, y3, fill);
+	Rectangle* rect = new Rectangle(x1, y1, width, height, fill);
 	addShape(rect);
+	delete rect;
 }
 
 void ShapeCollection::addCircle(double x1, double y1, double r, const char* fill)
 {
 	Circle* circle = new Circle(x1, y1, r, fill);
 	addShape(circle);
+	delete circle;
 }
 
 void ShapeCollection::addLine(double x1, double y1, double x2, double y2, const char* fill)
 {
 	Line* l = new Line(x1, y1, x2, y2, fill);
 	addShape(l);
+	delete l;
 }
 
-bool ShapeCollection::deleteAt(size_t index)
+bool ShapeCollection::deleteAt(int index)
 {
-	if (index >= shapesCount)
+	if (index < 0 || index >= shapesCount)
 		return false;
 
 	delete shapes[index];
 	shapes[index] = nullptr;
 
 	shapesCount--;
-	for (size_t i = index; i < shapesCount; i++)
+	for (int i = index; i < shapesCount; i++)
 		shapes[i] = shapes[i + 1];
 	
 	return true;
@@ -356,9 +411,6 @@ void ShapeCollection::print() const
 {
 	for (int i = 0; i < shapesCount; i++)
 	{
-		if (shapes[i] == nullptr)
-			continue;
-
 		std::cout << i + 1 << ". ";
 		shapes[i]->print();
 		std::cout << std::endl;
@@ -369,12 +421,8 @@ void ShapeCollection::printAreas() const
 {
 	for (int i = 0; i < shapesCount; i++)
 	{
-		if (shapes[i] == nullptr)
-			continue;
-
 		std::cout << i + 1 << ". ";
-		shapes[i]->getArea();
-		std::cout << std::endl;
+		std::cout << shapes[i]->getArea() << std::endl;
 	}
 }
 
@@ -382,12 +430,8 @@ void ShapeCollection::printPerimeters() const
 {
 	for (int i = 0; i < shapesCount; i++)
 	{
-		if (shapes[i] == nullptr)
-			continue;
-
 		std::cout << i + 1 << ". ";
-		shapes[i]->getPer();
-		std::cout << std::endl;
+		std::cout << shapes[i]->getPer() << std::endl;
 	}
 }
 
@@ -396,9 +440,6 @@ void ShapeCollection::printWithinRectangle(double x, double y, double width, dou
 	bool any = false;
 	for (int i = 0; i < shapesCount; i++)
 	{
-		if (shapes[i] == nullptr)
-			continue;
-
 		if (shapes[i]->withinRectangle(x, y, width, height))
 		{
 			any = true;
@@ -416,9 +457,6 @@ void ShapeCollection::printWithinCircle(double x, double y, double radius) const
 {
 	for (int i = 0; i < shapesCount; i++)
 	{
-		if (shapes[i] == nullptr)
-			continue;
-
 		if (shapes[i]->withinCircle(x, y, radius))
 		{
 			std::cout << i + 1 << ". ";
@@ -428,15 +466,39 @@ void ShapeCollection::printWithinCircle(double x, double y, double radius) const
 	}
 }
 
+void ShapeCollection::printPointIn(double x, double y) const
+{
+	bool any = false;
+	for (int i = 0; i < shapesCount; i++)
+	{
+		if (shapes[i]->isPointIn(x, y))
+		{
+			any = true;
+			std::cout << i + 1 << ". ";
+			shapes[i]->print();
+			std::cout << std::endl;
+		}
+	}
+
+	if (!any)
+		std::cout << "No figures contain " << x << " " << y << std::endl;
+}
+
 void ShapeCollection::translate(double vertical, double horizontal)
 {
 	for (int i = 0; i < shapesCount; i++)
 	{
-		if (shapes[i] == nullptr)
-			continue;
-
 		shapes[i]->translate(vertical, horizontal);
 	}
+}
+
+bool ShapeCollection::translateAt(int index, double vertical, double horizontal)
+{
+	if (index < 0 || index > shapesCount)
+		return false;
+
+	shapes[index]->translate(vertical, horizontal);
+	return true;
 }
 
 double ShapeCollection::getPerOfFigureByIndex(size_t ind) const
@@ -451,6 +513,11 @@ double ShapeCollection::getAreaOfFigureByIndex(size_t ind) const
 	if (ind >= shapesCount)
 		throw std::out_of_range("Out of range in shapes collection");
 	return shapes[ind]->getArea();
+}
+
+int ShapeCollection::getSize() const
+{
+	return shapesCount;
 }
 
 double ShapeCollection::getIfPointInShapeByIndex(size_t ind, int x, int y) const

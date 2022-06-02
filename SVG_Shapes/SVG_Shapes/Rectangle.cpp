@@ -77,11 +77,8 @@ bool Rectangle::withinCircle(double x, double y, double radius) const
 
 void Rectangle::writeSvgTag(std::ofstream& ofs) const
 {
-	const char* fill = getFill();
 	ofs << " <rect x=\"" << getPointAtIndex(0).x << "\" y=\"" << getPointAtIndex(0).y << "\"";
 	ofs << " width=\"" << getPointAtIndex(1).x - getPointAtIndex(0).x << "\"";
 	ofs << " height=\"" << getPointAtIndex(3).y - getPointAtIndex(0).y << "\"";
-	ofs << " fill=\"" << fill << "\" />" << std::endl;
-
-	delete[] fill;
+	ofs << " fill=\"" << getFill() << "\" />" << std::endl;
 }

@@ -2,7 +2,7 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg>
- <rect x="5" y="5" width="10" height="10" fill="green" />
- <circle cx="5" cy="5" r="10" fill="blue" />
- <rect x="100" y="60" width="10" height="10" fill="red" />
+ <rect x="205" y="105" width="10" height="10" fill="green" />
+ <line x1="-212" y1="112" x2="218" y2="-118" fill="orange" />
+ <circle cx="0.5" cy="0.5" r="30" fill="purple" />
 </svg>
