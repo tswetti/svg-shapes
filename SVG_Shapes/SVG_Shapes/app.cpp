@@ -280,7 +280,7 @@ bool isValidCommand(const char* first, const char* second, const char* third, co
 		return isPositiveInteger(second) && third[0] == '\0';
 
 	if (strcmp(first, "translate") == 0)
-		return isPositiveInteger(second) && isNumber(third) && (isNumber(fourth) || fourth[0] == '\0') && fifth[0] == '\0';
+		return isNumber(second) && convertToInt(second) > 0 && isNumber(third) && (isNumber(fourth) || fourth[0] == '\0') && fifth[0] == '\0';
 
 	if (strcmp(first, "perimeter") == 0)
 		return isPositiveInteger(second) && third[0] == '\0';

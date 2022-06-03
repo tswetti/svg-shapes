@@ -6,8 +6,6 @@
  <rect x="200" y="70" width="10" height="10" fill="red" />
  <rect x="-900" y="-990" width="10" height="20" fill="yellow" />
 </svg>
-<testfewivdskcx
-3rfdvgree
 
 
 
