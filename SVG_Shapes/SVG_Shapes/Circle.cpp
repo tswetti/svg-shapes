@@ -1,6 +1,7 @@
 #include "Circle.h"
 
 const double PI = 3.1415;
+
 Circle::Circle(double x, double y, double radius, const char* fill) : Shape(1, fill), radius(radius)
 {
 	setPoint(0, x, y);

@@ -1,7 +1,9 @@
 #pragma once
+
 #include <iostream>
 #include <cstring>
 #include <fstream>
+
 #pragma warning(disable:4996)
 
 class Shape
@@ -22,7 +24,7 @@ protected:
 		}
 	};
 	const point& getPointAtIndex(size_t) const;
-	void setPointAtIndex(size_t, double, double);
+	bool setPointAtIndex(size_t, double, double);
 	void setFill(const char*);
 
 private:
@@ -41,12 +43,12 @@ public:
 	Shape& operator=(const Shape&);
 	virtual ~Shape();
 
-	void setPoint(size_t, double, double);
+	bool setPoint(size_t, double, double);
 
+	const char* getFill() const;
 	virtual double getArea() const = 0;
 	virtual double getPer()  const = 0;
 	virtual bool isPointIn(double, double) const = 0;
-	const char* getFill() const;
 
 	virtual void print() const;
 

@@ -29,11 +29,9 @@ double Rectangle::getPer() const
 bool Rectangle::isPointIn(double x, double y) const
 {
 	Shape::point p(x, y);
-	//std::cout << p.x << " " << getPointAtIndex(0).x << " ";
-	bool test = p.x >= getPointAtIndex(0).x && p.x <= getPointAtIndex(1).x &&
+
+	return p.x >= getPointAtIndex(0).x && p.x <= getPointAtIndex(1).x &&
 		p.y >= getPointAtIndex(0).y && p.y <= getPointAtIndex(2).y;
-	//std::cout << test;
-	return test;
 }
 Shape* Rectangle::clone() const
 {

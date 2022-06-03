@@ -4,53 +4,64 @@
 
 bool appStart()
 {
+	const int MAX_WORD_LENGTH = 30;
+	const int MAX_CMD_WORDS = 7;
+
 	ShapeCollection sc;
-	char currentFile[30] = {};
+
+	char currentFile[MAX_WORD_LENGTH] = {};
 	currentFile[0] = '\0';
+
+	char firstCmd[MAX_WORD_LENGTH] = {}, secondCmd[MAX_WORD_LENGTH] = {}, thirdCmd[MAX_WORD_LENGTH] = {},
+		fourthCmd[MAX_WORD_LENGTH] = {}, fifthCmd[MAX_WORD_LENGTH] = {}, sixthCmd[MAX_WORD_LENGTH] = {}, seventhCmd[MAX_WORD_LENGTH] = {};
 
 	std::cout << "commands: " << std::endl;
 	std::cout << "open <file> | save | exit |" << std::endl;
-	std::cout << "create <shape> <x> <y> ... <fill> | erase <index> |" << std::endl;
-	std::cout << "print | perimeters | areas |" << std::endl;
-	std::cout << "translate <vertical value> <horizontal value> | within <shape> <details> | point <x> <y> |" << std::endl;
+	std::cout << "create <figure> <x> <y> ... <fill> | erase <index> |" << std::endl;
+	std::cout << "print | perimeters | areas | perimeter <figure number> | area <figure number> |" << std::endl;
+	std::cout << "translate <figure number - optional> <vertical value> <horizontal value> | within <figure> <details> | point <x> <y> |" << std::endl;
 	std::cout << std::endl;
 
 	do
 	{
 		std::cout << ">";
-		char command[100];
-		std::cin.getline(command, 140);
+		char command[MAX_WORD_LENGTH * MAX_CMD_WORDS];
+		std::cin.getline(command, MAX_WORD_LENGTH * MAX_CMD_WORDS);
 
-		int commandsCnt = wordsCnt(command);
-		if (commandsCnt == 0 || commandsCnt > 7)
+		if (!hasOnlyValidCharacters(command))
 		{
-			// ne
+			std::cout << "Invalid characters!" << std::endl;
+			continue;
 		}
 
-		char firstCmd[20] = {};
-		char secondCmd[20] = {};
-		char thirdCmd[20] = {};
-		char fourthCmd[20] = {};
-		char fifthCmd[20] = {};
-		char sixthCmd[20] = {};
-		char seventhCmd[20] = {};
+		int commandsCnt = wordsCnt(command);
+		if (commandsCnt == 0 || commandsCnt > MAX_CMD_WORDS)
+		{
+			continue;
+		}
+
 		firstCmd[0] = secondCmd[0] = thirdCmd[0] = fourthCmd[0] = fifthCmd[0] = sixthCmd[0] = seventhCmd[0] = '\0';
 
 		fillCmdWords(command, commandsCnt, firstCmd, secondCmd, thirdCmd, fourthCmd, fifthCmd, sixthCmd, seventhCmd);
 
 		if (!isValidCommand(firstCmd, secondCmd, thirdCmd, fourthCmd, fifthCmd, sixthCmd, seventhCmd))
 		{
-			std::cout << "Invalid command!" << std::endl;
+			std::cout << "Invalid command!" << std::endl << std::endl;
 			continue;
 		}
 
-		if (strcmp(firstCmd, "open") == 0)
+		if (strcmp(firstCmd, "exit") == 0)
+		{
+			return false;
+		}
+
+		else if (strcmp(firstCmd, "open") == 0)
 		{
 			std::ifstream ifs(secondCmd);
 
 			if (!ifs.is_open())
 			{
-				std::cout << "File couldn't open." << std::endl;
+				std::cout << "File couldn't open." << std::endl << std::endl;
 				continue;
 			}
 
@@ -62,7 +73,7 @@ bool appStart()
 
 			strcpy(currentFile, secondCmd);
 
-			std::cout << "Successfully opened " << currentFile << std::endl;
+			std::cout << "Successfully opened " << currentFile << std::endl << std::endl;
 
 			sc.addFromFile(ifs);
 			ifs.close();
@@ -71,13 +82,14 @@ bool appStart()
 		
 		if (currentFile[0] == '\0')
 		{
-			std::cout << "No file is open. Use open <filename>" << std::endl;
+			std::cout << "No file is open. Use open <filename>" << std::endl << std::endl;
 			continue;
 		}
 
 		if (strcmp(firstCmd, "print") == 0)
 		{
 			sc.print();
+			std::cout << std::endl;
 			continue;
 		}
 		else if (strcmp(firstCmd, "create") == 0)
@@ -88,7 +100,7 @@ bool appStart()
 				sc.addCircle(strToDouble(thirdCmd), strToDouble(fourthCmd), strToDouble(fifthCmd), sixthCmd);
 			else if (strcmp(secondCmd, "line") == 0)
 				sc.addLine(strToDouble(thirdCmd), strToDouble(fourthCmd), strToDouble(fifthCmd), strToDouble(sixthCmd), seventhCmd);
-			std::cout << "Successfully created shape (" << sc.getSize() << ")" << std::endl;
+			std::cout << "Successfully created figure (" << sc.getSize() << ")" << std::endl << std::endl;
 
 			continue;
 		}
@@ -99,21 +111,23 @@ bool appStart()
 			else if (strcmp(secondCmd, "circle") == 0)
 				sc.printWithinCircle(strToDouble(thirdCmd), strToDouble(fourthCmd), strToDouble(fifthCmd));
 
+			std::cout << std::endl;
 			continue;
 		}
 		else if (strcmp(firstCmd, "point") == 0)
 		{
 			sc.printPointIn(strToDouble(secondCmd), strToDouble(thirdCmd));
+			std::cout << std::endl;
 			continue;
 		}
 		else if (strcmp(firstCmd, "erase") == 0)
 		{
 			if (!sc.deleteAt(convertToInt(secondCmd) - 1))
 			{
-				std::cout << "No such shape." << std::endl;
+				std::cout << "There is no figure " << convertToInt(secondCmd) << std::endl << std::endl;
 				continue;
 			}
-			std::cout << "Successfully erased shape (" << convertToInt(secondCmd) << ")" << std::endl;
+			std::cout << "Successfully erased figure (" << convertToInt(secondCmd) << ")" << std::endl << std::endl;
 			continue;
 		}
 		else if (strcmp(firstCmd, "translate") == 0)
@@ -121,7 +135,7 @@ bool appStart()
 			if (commandsCnt == 3)
 			{
 				sc.translate(strToDouble(secondCmd), strToDouble(thirdCmd));
-				std::cout << "Translated all shapes." << std::endl;
+				std::cout << "Translated all figures." << std::endl << std::endl;
 				continue;
 			}
 			else
@@ -129,27 +143,51 @@ bool appStart()
 				int pos = convertToInt(secondCmd) - 1;
 				if (!sc.translateAt(pos, strToDouble(thirdCmd), strToDouble(fourthCmd)))
 				{
-					std::cout << "No such shape." << std::endl;
-						continue;
+					std::cout << "There is no figure " << pos + 1 << std::endl << std::endl;
+					continue;
 				}
-				std::cout << "Shape (" << pos + 1 << ") successfully translated." << std::endl;
+				std::cout << "Figure (" << pos + 1 << ") successfully translated." << std::endl << std::endl;
 				continue;
 
 			}
 		}
 		else if (strcmp(firstCmd, "perimeters") == 0)
+		{
 			sc.printPerimeters();
+			std::cout << std::endl;
+			continue;
+		}
 		else if (strcmp(firstCmd, "areas") == 0)
+		{
 			sc.printAreas();
+			std::cout << std::endl;
+			continue;
+		}
+		else if (strcmp(firstCmd, "perimeter") == 0)
+		{
+			int index = convertToInt(secondCmd) - 1;
+			double perimeter = sc.getPerOfFigureByIndex(index);
+
+			if (perimeter == -1)
+				std::cout << "There is no figure " << index + 1 << std::endl << std::endl;
+			else
+				std::cout << '\t' << index + 1 << ". perimeter: " << perimeter << std::endl << std::endl;
+		}
+		else if (strcmp(firstCmd, "area") == 0)
+		{
+			int index = convertToInt(secondCmd) - 1;
+			double area = sc.getAreaOfFigureByIndex(index);
+
+			if (area == -1)
+				std::cout << "There is no figure " << index + 1 << std::endl << std::endl;
+			else
+				std::cout << '\t' << index + 1 << ". area: " << area << std::endl << std::endl;
+		}
 		else if (strcmp(firstCmd, "save") == 0)
 		{
 			sc.save(currentFile);
-			std::cout << "Successfully saved the changes to " << currentFile << std::endl;
+			std::cout << "Successfully saved the changes to " << currentFile << std::endl << std::endl;
 			continue;
-		}
-		else if (strcmp(firstCmd, "exit") == 0)
-		{
-			return false;
 		}
 	} while (true);
 
@@ -160,20 +198,16 @@ void wordStartEndIndexes(const char* word, int& start, int& end, int startWord)
 {
 	start = -1;
 	end = -1;
-	if (word[startWord] == '-' || word[startWord] >= 'a' && word[startWord] <= 'z' || word[startWord] >= 'A' && word[startWord] <= 'Z' ||
-		word[startWord] >= '0' && word[startWord] <= '9')
+
+	if (isValidCharacter(word[startWord]))
 		start = startWord;
 
 	for (int i = startWord; i < strlen(word); i++)
 	{
-		if (start == -1 && (word[i] == ' ' || word[i] == '\t') && (word[i + 1] == '-' ||(word[i + 1] >= 'a' &&
-			word[i + 1] <= 'z') || (word[i + 1] >= 'A' && word[i + 1] <= 'Z') ||
-			word[i + 1] >= '0' && word[i + 1] <= '9'))
+		if (start == -1 && (word[i] == ' ' || word[i] == '\t') && isValidCharacter(word[i + 1]))
 			start = i + 1;
 
-		if ((word[i] == '-' || (word[i] >= 'a' && word[i] <= 'z') || (word[i] >= 'A' && word[i] <= 'Z') ||
-			(word[i] >= '0' && word[i] <= '9')) &&
-			(word[i + 1] == ' ' || word[i + 1] == '\t' || word[i + 1] == '\n' || word[i + 1] == '\0'))
+		if (isValidCharacter(word[i]) && (word[i + 1] == ' ' || word[i + 1] == '\t' || word[i + 1] == '\n' || word[i + 1] == '\0'))
 		{
 			end = i;
 			break;
@@ -195,14 +229,12 @@ int wordsCnt(const char* word)
 {
 	int cnt = 0;
 
-	if (word[0]=='-' || word[0] >= 'a' && word[0] <= 'z' || word[0] >= 'A' && word[0] <= 'Z' || word[0] >= '0' && word[0] <= '9')
+	if (isValidCharacter(word[0]))
 		cnt++;
 
 	for (int i = 0; i < strlen(word); i++)
 	{
-		if ((word[i] == ' ' || word[i] == '\t') && (word[i + 1] == '-' || (word[i + 1] >= 'a' &&
-			word[i + 1] <= 'z') || (word[i + 1] >= 'A' && word[i + 1] <= 'Z') || 
-			word[i + 1] >= '0' && word[i + 1] <= '9'))
+		if ((word[i] == ' ' || word[i] == '\t') && isValidCharacter(word[i + 1]))
 			cnt++;
 	}
 
@@ -211,11 +243,6 @@ int wordsCnt(const char* word)
 
 bool isValidCommand(const char* first, const char* second, const char* third, const char* fourth, const char* fifth, const char* sixth, const char* seventh)
 {
-	/*if (strcmp(first, "open") != 0 && strcmp(first, "print") != 0 && strcmp(first, "create") != 0 && strcmp(first, "within") != 0 &&
-		strcmp(first, "point") != 0 && strcmp(first, "erase") != 0 && strcmp(first, "translate") != 0 && strcmp(first, "perimeters") != 0 &&
-		strcmp(first, "areas") != 0 && strcmp(first, "save") != 0 && strcmp(first, "exit") != 0)
-		return false;*/
-
 	if (strcmp(first, "open") == 0)
 		return second[0] != '\0' && third[0] == '\0';
 
@@ -225,12 +252,12 @@ bool isValidCommand(const char* first, const char* second, const char* third, co
 	if (strcmp(first, "create") == 0)
 	{
 		if (strcmp(second, "rectangle") == 0)
-			return isNumber(third) && isNumber(fourth) && fifth[0] != '-' && isNumber(fifth) &&
-			sixth[0] != '-' && isNumber(sixth) && seventh[0] != '\0';
+			return isNumber(third) && isNumber(fourth) && isNumber(fifth) && strToDouble(fifth) > 0 &&
+			isNumber(sixth) && strToDouble(sixth) > 0 && seventh[0] != '\0';
 
 		if (strcmp(second, "circle") == 0)
-			return isNumber(third) && isNumber(fourth) && fifth[0] != '-' && 
-			isNumber(fifth) && sixth[0] != '\0' && seventh[0] == '\0';
+			return isNumber(third) && isNumber(fourth) && 
+			isNumber(fifth) && strToDouble(fifth) > 0 && sixth[0] != '\0' && seventh[0] == '\0';
 
 		if (strcmp(second, "line") == 0)
 			return isNumber(third) && isNumber(fourth) && isNumber(fifth) && isNumber(sixth) && seventh[0] != '\0';
@@ -239,21 +266,27 @@ bool isValidCommand(const char* first, const char* second, const char* third, co
 	if (strcmp(first, "within") == 0)
 	{
 		if (strcmp(second, "rectangle") == 0)
-			return isNumber(third) && isNumber(fourth) && fifth[0] != '-' && isNumber(fifth) && 
-			sixth[0] != '-' && isNumber(sixth) && seventh[0] == '\0';
+			return isNumber(third) && isNumber(fourth) && isNumber(fifth) && strToDouble(fifth) > 0 &&
+			isNumber(sixth) && strToDouble(sixth) > 0 && seventh[0] == '\0';
 
 		if (strcmp(second, "circle") == 0)
-			return isNumber(third) && isNumber(fourth) && fifth[0] != '-' && isNumber(fifth) && sixth[0] == '\0';
+			return isNumber(third) && isNumber(fourth) && isNumber(fifth) && strToDouble(fifth) > 0 && sixth[0] == '\0';
 	}
 
 	if (strcmp(first, "point") == 0)
 		return isNumber(second) && isNumber(third) && fourth[0] == '\0';
 
 	if (strcmp(first, "erase") == 0)
-		return second[0] != '-' && isInteger(second) && third[0] == '\0';
+		return isPositiveInteger(second) && third[0] == '\0';
 
 	if (strcmp(first, "translate") == 0)
-		return isNumber(second) && isNumber(third) && (isNumber(fourth) || fourth[0] == '\0') && fifth[0] == '\0';
+		return isPositiveInteger(second) && isNumber(third) && (isNumber(fourth) || fourth[0] == '\0') && fifth[0] == '\0';
+
+	if (strcmp(first, "perimeter") == 0)
+		return isPositiveInteger(second) && third[0] == '\0';
+
+	if (strcmp(first, "area") == 0)
+		return isPositiveInteger(second) && third[0] == '\0';
 
 	if (strcmp(first, "perimeters") == 0)
 		return second[0] == '\0';
@@ -331,7 +364,7 @@ bool isNumber(const char* str)
 		if (str[i] < '0' || str[i] > '9')
 		{
 			if (str[i] != '.' && str[i] != ',')
-				if (str[i] == '-' && i == 0)
+				if (str[i] == '-' && i == 0 && strlen(str) > 1)
 					continue;
 				return false;
 			if (hasPoint)
@@ -343,8 +376,11 @@ bool isNumber(const char* str)
 	return true;
 }
 
-bool isInteger(const char* str)
+bool isPositiveInteger(const char* str)
 {
+	if (strlen(str) == 0)
+		return false;
+
 	for (int i = 0; i < strlen(str); i++)
 	{
 		if (str[i] < '0' || str[i] > '9')
@@ -396,4 +432,34 @@ double strToDouble(const char* str)
 		num = -num;
 
 	return num;
+}
+
+int convertToInt(const char* str) 
+{
+	int num = 0;
+
+	for(int i = 0; i < strlen(str); i++)
+	{
+		num *= 10;
+		num += str[i] - '0';
+	}
+
+	return num;
+}
+
+bool isValidCharacter(char ch)
+{
+	return ch == '-' || ch == '_' || ch == '.' || 
+		(ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9');
+}
+
+bool hasOnlyValidCharacters(const char* str)
+{
+	for (int i = 0; i < strlen(str); i++)
+	{
+		if (!isValidCharacter(str[i]) && str[i] != ' ' && str[i] != '\t' && str[i] != '\n')
+			return false;
+	}
+
+	return true;
 }

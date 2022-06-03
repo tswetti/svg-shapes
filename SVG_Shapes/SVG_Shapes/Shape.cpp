@@ -51,13 +51,14 @@ const Shape::point& Shape::getPointAtIndex(size_t index) const
 	return  points[index];
 }
 
-void Shape::setPointAtIndex(size_t index, double x, double y)
+bool Shape::setPointAtIndex(size_t index, double x, double y)
 {
 	if (index >= pointsCount)
-		throw std::exception("Invalid point index!");
+		return false;
 
 	points[index].x = x;
 	points[index].y = y;
+	return true;
 }
 
 void Shape::setFill(const char* fill)
@@ -67,12 +68,13 @@ void Shape::setFill(const char* fill)
 	strcpy(this->fill, fill);
 }
 
-void Shape::setPoint(size_t pointIndex, double x, double y)
+bool Shape::setPoint(size_t pointIndex, double x, double y)
 {
 	if (pointIndex >= pointsCount)
-		throw std::exception("Invalid point index!");
+		return false;
 
 	points[pointIndex] = point(x, y);
+	return true;
 }
 
 void Shape::print() const

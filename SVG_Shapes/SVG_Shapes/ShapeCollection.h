@@ -16,7 +16,6 @@ class ShapeCollection
 
 public:
 	ShapeCollection();
-	//ShapeCollection(std::ifstream&);
 	ShapeCollection(const ShapeCollection&);
 	ShapeCollection& operator=(const ShapeCollection&);
 	~ShapeCollection();
@@ -47,11 +46,8 @@ public:
 
 	double getPerOfFigureByIndex(size_t) const;
 	double getAreaOfFigureByIndex(size_t) const;
-	double getIfPointInShapeByIndex(size_t, int, int) const;
 
 	int getSize() const;
 
 	void save(const char*) const;
 };
-
-int convertToInt(char a[1000]);

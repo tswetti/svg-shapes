@@ -1,6 +1,5 @@
 #include "ShapeCollection.h"
 #include "app.h"
-#include <stdexcept>      // std::out_of_range
 #include "Rectangle.h"
 #include "Circle.h"
 #include "Line.h"
@@ -42,13 +41,63 @@ ShapeCollection::ShapeCollection()
 	shapes = new Shape * [capacity];
 }
 
+ShapeCollection::ShapeCollection(const ShapeCollection& other)
+{
+	copy(other);
+}
+
+ShapeCollection& ShapeCollection::operator=(const ShapeCollection& other)
+{
+	if (this != &other)
+	{
+		free();
+		copy(other);
+	}
+	return *this;
+}
+
+ShapeCollection::~ShapeCollection()
+{
+	free();
+}
+
+void ShapeCollection::addShape(Shape* shape)
+{
+	if (shapesCount >= capacity)
+		resize();
+
+	shapes[shapesCount++] = shape->clone();
+}
+
+void ShapeCollection::addRectangle(double x1, double y1, double width, double height, const char* fill)
+{
+	Rectangle* rect = new Rectangle(x1, y1, width, height, fill);
+	addShape(rect);
+	delete rect;
+}
+
+void ShapeCollection::addCircle(double x1, double y1, double r, const char* fill)
+{
+	Circle* circle = new Circle(x1, y1, r, fill);
+	addShape(circle);
+	delete circle;
+}
+
+void ShapeCollection::addLine(double x1, double y1, double x2, double y2, const char* fill)
+{
+	Line* l = new Line(x1, y1, x2, y2, fill);
+	addShape(l);
+	delete l;
+}
+
 void ShapeCollection::addFromFile(std::ifstream& ifs)
 {
+	const int MAX_LINE_LENGTH = 1024;
 	bool isSvgTag = false;
 	while (ifs.good())
 	{
-		char buff[1024];
-		ifs.getline(buff, 1024);
+		char buff[MAX_LINE_LENGTH];
+		ifs.getline(buff, MAX_LINE_LENGTH);
 
 		if (buff[0] == '<' && buff[1] == 's' && buff[2] == 'v' && buff[3] == 'g' && buff[4] == '>')
 		{
@@ -88,58 +137,216 @@ void ShapeCollection::addFromFile(std::ifstream& ifs)
 	}
 }
 
-/*ShapeCollection::ShapeCollection(std::ifstream& ifs)
+bool ShapeCollection::deleteAt(int index)
 {
-	capacity = 8;
-	shapesCount = 0;
-	shapes = new Shape * [capacity];
+	if (index < 0 || index >= shapesCount)
+		return false;
 
-	bool isSvgTag = false;
+	delete shapes[index];
+
+	for (int i = index; i < shapesCount - 1; i++)
+		shapes[i] = shapes[i + 1];
+
+	shapes[shapesCount - 1] = nullptr;
+	shapesCount--;
+	
+	return true;
+}
+
+void ShapeCollection::print() const
+{
+	for (int i = 0; i < shapesCount; i++)
+	{
+		std::cout << '\t' << i + 1 << ". ";
+		shapes[i]->print();
+		std::cout << std::endl;
+	}
+}
+
+void ShapeCollection::printAreas() const
+{
+	for (int i = 0; i < shapesCount; i++)
+	{
+		std::cout << '\t' << i + 1 << ". ";
+		std::cout << shapes[i]->getArea() << std::endl;
+	}
+}
+
+void ShapeCollection::printPerimeters() const
+{
+	for (int i = 0; i < shapesCount; i++)
+	{
+		std::cout << '\t' << i + 1 << ". ";
+		std::cout << shapes[i]->getPer() << std::endl;
+	}
+}
+
+void ShapeCollection::printWithinRectangle(double x, double y, double width, double height) const
+{
+	bool any = false;
+	for (int i = 0; i < shapesCount; i++)
+	{
+		if (shapes[i]->withinRectangle(x, y, width, height))
+		{
+			any = true;
+			std::cout << '\t' << i + 1 << ". ";
+			shapes[i]->print();
+			std::cout << std::endl;
+		}
+	}
+
+	if (!any)
+		std::cout << "No figures are located within rectangle " << x << " " << y << " " << width << " " << height << std::endl;
+}
+
+void ShapeCollection::printWithinCircle(double x, double y, double radius) const
+{
+	bool any = false;
+
+	for (int i = 0; i < shapesCount; i++)
+	{
+		if (shapes[i]->withinCircle(x, y, radius))
+		{
+			any = true;
+			std::cout << '\t' << i + 1 << ". ";
+			shapes[i]->print();
+			std::cout << std::endl;
+		}
+	}
+
+	if (!any)
+		std::cout << "No figures are located within circle " << x << " " << y << " " << radius << std::endl;
+}
+
+void ShapeCollection::printPointIn(double x, double y) const
+{
+	bool any = false;
+	for (int i = 0; i < shapesCount; i++)
+	{
+		if (shapes[i]->isPointIn(x, y))
+		{
+			any = true;
+			std::cout << '\t' << i + 1 << ". ";
+			shapes[i]->print();
+			std::cout << std::endl;
+		}
+	}
+
+	if (!any)
+		std::cout << "No figures contain " << x << " " << y << std::endl;
+}
+
+void ShapeCollection::translate(double vertical, double horizontal)
+{
+	for (int i = 0; i < shapesCount; i++)
+	{
+		shapes[i]->translate(vertical, horizontal);
+	}
+}
+
+bool ShapeCollection::translateAt(int index, double vertical, double horizontal)
+{
+	if (index < 0 || index > shapesCount)
+		return false;
+
+	shapes[index]->translate(vertical, horizontal);
+	return true;
+}
+
+double ShapeCollection::getPerOfFigureByIndex(size_t ind) const
+{
+	if (ind >= shapesCount)
+		return -1;
+	return shapes[ind]->getPer();
+}
+
+double ShapeCollection::getAreaOfFigureByIndex(size_t ind) const
+{
+	if (ind >= shapesCount)
+		return -1;
+	return shapes[ind]->getArea();
+}
+
+int ShapeCollection::getSize() const
+{
+	return shapesCount;
+}
+
+void ShapeCollection::save(const char* fileName) const
+{
+	const int MAX_LINES = 200;
+	const int MAX_LINE_LENGTH = 1024;
+
+	std::ifstream ifs(fileName);
+	char** linesBeforeSVG = new char* [MAX_LINES];
+	char** linesAfterSVG = new char* [MAX_LINES];
+
+	int i1, i2;
+	i1 = i2 = 0;
+
+	bool isSVGTag = false;
+
 	while (ifs.good())
 	{
-		char buff[1024];
-		ifs.getline(buff, 1024);
+		char buff[MAX_LINE_LENGTH];
+
+		ifs.getline(buff, MAX_LINE_LENGTH);
 
 		if (buff[0] == '<' && buff[1] == 's' && buff[2] == 'v' && buff[3] == 'g' && buff[4] == '>')
 		{
-			isSvgTag = true;
+			isSVGTag = true;
+			break;
+		}
+		linesBeforeSVG[i1] = new char[MAX_LINE_LENGTH];
+		strcpy(linesBeforeSVG[i1++], buff);
+	}
+
+	while (ifs.good())
+	{
+		char buff[MAX_LINE_LENGTH];
+
+		ifs.getline(buff, MAX_LINE_LENGTH);
+
+		if (buff[0] == '<' && buff[1] == '/' && buff[2] == 's' && buff[3] == 'v' && buff[4] == 'g' && buff[5] == '>')
+		{
+			isSVGTag = false;
 			continue;
 		}
 
-		if (buff[0] == '<' && buff[1] == '/' && buff[2] == 's' && buff[3] == 'v' && buff[4] == 'g' && buff[5] == '>')
-			break;
-
-		if (isSvgTag)
+		if (!isSVGTag)
 		{
-			char shape[20];
-			int i = 0;
-			int shapeI = 0;
-
-			while (buff[i] == ' ' || buff[i] == '\t')
-				i++;
-
-			while (buff[i] != ' ' && buff[i]!='\t' && shapeI < 20)
-				shape[shapeI++] = buff[i++];
-			shape[shapeI] = '\0';
-
-			if (strcmp(shape, "<rect") == 0)
-			{
-				std::cout << shapesCount << std::endl;
-				rectFromTag(buff);
-			}
-			else if (strcmp(shape, "<circle") == 0)
-			{
-				std::cout << shapesCount << std::endl;
-				circleFromTag(buff);
-			}
-			else if (strcmp(shape, "<line") == 0)
-			{
-				std::cout << shapesCount << std::endl;
-				lineFromTag(buff);
-			}
+			linesAfterSVG[i2] = new char[MAX_LINE_LENGTH];
+			strcpy(linesAfterSVG[i2++], buff);
 		}
 	}
-}*/
+
+	ifs.close();
+
+	std::ofstream ofs(fileName);
+
+	for (int i = 0; i < i1; i++)
+		ofs << linesBeforeSVG[i] << std::endl;
+
+	ofs << "<svg>" << std::endl;
+
+	for (int i = 0; i < shapesCount; i++)
+		shapes[i]->writeSvgTag(ofs);
+
+	ofs << "</svg>" << std::endl;
+
+	for (int i = 0; i < i2; i++)
+		ofs << linesAfterSVG[i] << std::endl;
+
+	for (int i = 0; i < i1; i++)
+		delete[] linesBeforeSVG[i];
+	delete[] linesBeforeSVG;
+
+	for (int i = 0; i < i2; i++)
+		delete[] linesAfterSVG[i];
+	delete[] linesAfterSVG;
+
+	ofs.close();
+}
 
 bool ShapeCollection::lineFromTag(const char* tag)
 {
@@ -190,7 +397,7 @@ bool ShapeCollection::lineFromTag(const char* tag)
 
 	while (!(tag[i] == 'f' && tag[i + 1] == 'i' && tag[i + 2] == 'l' && tag[i + 3] == 'l' && tag[i + 4] == '=' && tag[i + 5] == '"'))
 		i++;
-	
+
 	i += 6;
 
 	while (tag[i] != '"')
@@ -330,277 +537,4 @@ bool ShapeCollection::rectFromTag(const char* tag)
 	delete[] fill;
 
 	return true;
-}
-
-int convertToInt(char a[1000]) {
-	int i = 0;
-	int num = 0;
-	while (a[i] != '\0')
-	{
-		num = (a[i] - '0') + (num * 10);
-		i++;
-	}
-	return num;;
-}
-
-ShapeCollection::ShapeCollection(const ShapeCollection& other)
-{
-	copy(other);
-}
-
-ShapeCollection& ShapeCollection::operator=(const ShapeCollection& other)
-{
-	if (this != &other)
-	{
-		free();
-		copy(other);
-	}
-	return *this;
-}
-
-ShapeCollection::~ShapeCollection()
-{
-	free();
-}
-
-void ShapeCollection::addShape(Shape* shape)
-{
-	if (shapesCount >= capacity)
-		resize();
-
-	shapes[shapesCount++] = shape->clone();
-}
-
-void ShapeCollection::addRectangle(double x1, double y1, double width, double height, const char* fill)
-{
-	Rectangle* rect = new Rectangle(x1, y1, width, height, fill);
-	addShape(rect);
-	delete rect;
-}
-
-void ShapeCollection::addCircle(double x1, double y1, double r, const char* fill)
-{
-	Circle* circle = new Circle(x1, y1, r, fill);
-	addShape(circle);
-	delete circle;
-}
-
-void ShapeCollection::addLine(double x1, double y1, double x2, double y2, const char* fill)
-{
-	Line* l = new Line(x1, y1, x2, y2, fill);
-	addShape(l);
-	delete l;
-}
-
-bool ShapeCollection::deleteAt(int index)
-{
-	if (index < 0 || index >= shapesCount)
-		return false;
-
-	delete shapes[index];
-	shapes[index] = nullptr;
-
-	shapesCount--;
-	for (int i = index; i < shapesCount; i++)
-		shapes[i] = shapes[i + 1];
-	
-	return true;
-}
-
-void ShapeCollection::print() const
-{
-	for (int i = 0; i < shapesCount; i++)
-	{
-		std::cout << i + 1 << ". ";
-		shapes[i]->print();
-		std::cout << std::endl;
-	}
-}
-
-void ShapeCollection::printAreas() const
-{
-	for (int i = 0; i < shapesCount; i++)
-	{
-		std::cout << i + 1 << ". ";
-		std::cout << shapes[i]->getArea() << std::endl;
-	}
-}
-
-void ShapeCollection::printPerimeters() const
-{
-	for (int i = 0; i < shapesCount; i++)
-	{
-		std::cout << i + 1 << ". ";
-		std::cout << shapes[i]->getPer() << std::endl;
-	}
-}
-
-void ShapeCollection::printWithinRectangle(double x, double y, double width, double height) const
-{
-	bool any = false;
-	for (int i = 0; i < shapesCount; i++)
-	{
-		if (shapes[i]->withinRectangle(x, y, width, height))
-		{
-			any = true;
-			std::cout << i + 1 << ". ";
-			shapes[i]->print();
-			std::cout << std::endl;
-		}
-	}
-
-	if (!any)
-		std::cout << "No figures are within " << x << " " << y << " " << width << " " << height << std::endl;
-}
-
-void ShapeCollection::printWithinCircle(double x, double y, double radius) const
-{
-	for (int i = 0; i < shapesCount; i++)
-	{
-		if (shapes[i]->withinCircle(x, y, radius))
-		{
-			std::cout << i + 1 << ". ";
-			shapes[i]->print();
-			std::cout << std::endl;
-		}
-	}
-}
-
-void ShapeCollection::printPointIn(double x, double y) const
-{
-	bool any = false;
-	for (int i = 0; i < shapesCount; i++)
-	{
-		if (shapes[i]->isPointIn(x, y))
-		{
-			any = true;
-			std::cout << i + 1 << ". ";
-			shapes[i]->print();
-			std::cout << std::endl;
-		}
-	}
-
-	if (!any)
-		std::cout << "No figures contain " << x << " " << y << std::endl;
-}
-
-void ShapeCollection::translate(double vertical, double horizontal)
-{
-	for (int i = 0; i < shapesCount; i++)
-	{
-		shapes[i]->translate(vertical, horizontal);
-	}
-}
-
-bool ShapeCollection::translateAt(int index, double vertical, double horizontal)
-{
-	if (index < 0 || index > shapesCount)
-		return false;
-
-	shapes[index]->translate(vertical, horizontal);
-	return true;
-}
-
-double ShapeCollection::getPerOfFigureByIndex(size_t ind) const
-{
-	if (ind >= shapesCount)
-		throw std::out_of_range("Out of range in shapes collection");
-	return shapes[ind]->getPer();
-}
-
-double ShapeCollection::getAreaOfFigureByIndex(size_t ind) const
-{
-	if (ind >= shapesCount)
-		throw std::out_of_range("Out of range in shapes collection");
-	return shapes[ind]->getArea();
-}
-
-int ShapeCollection::getSize() const
-{
-	return shapesCount;
-}
-
-double ShapeCollection::getIfPointInShapeByIndex(size_t ind, int x, int y) const
-{
-	if (ind >= shapesCount)
-		throw std::out_of_range("Out of range in shapes collection");
-	return shapes[ind]->isPointIn(x, y);
-}
-
-void ShapeCollection::save(const char* fileName) const
-{
-	std::ifstream ifs(fileName);
-	char** linesBeforeSVG = new char* [200];
-	char** linesAfterSVG = new char* [200];
-
-	for (int i = 0; i < 200; i++)
-	{
-		linesBeforeSVG[i] = new char[1024];
-		linesAfterSVG[i] = new char[1024];
-	}
-
-	int i1, i2;
-	i1 = i2 = 0;
-
-	bool isSVGTag = false;
-
-	while (ifs.good())
-	{
-		char buff[1024];
-
-		ifs.getline(buff, 1024);
-
-		if (buff[0] == '<' && buff[1] == 's' && buff[2] == 'v' && buff[3] == 'g' && buff[4] == '>')
-		{
-			isSVGTag = true;
-			break;
-		}
-
-		strcpy(linesBeforeSVG[i1++], buff);
-	}
-
-	while (ifs.good())
-	{
-		char buff[1024];
-
-		ifs.getline(buff, 1024);
-
-		if (buff[0] == '<' && buff[1] == 's' && buff[2] == 'v' && buff[3] == 'g' && buff[4] == '/' && buff[5] == '>')
-		{
-			isSVGTag = false;
-			continue;
-		}
-		else
-			continue;
-
-		if (!isSVGTag)
-			strcpy(linesAfterSVG[i2], buff);
-	}
-
-	ifs.close();
-
-	std::ofstream ofs(fileName);
-
-	for (int i = 0; i < i1; i++)
-		ofs << linesBeforeSVG[i] << std::endl;
-
-	ofs << "<svg>" << std::endl;
-
-	for (int i = 0; i < shapesCount; i++)
-		shapes[i]->writeSvgTag(ofs);
-
-	ofs << "</svg>" << std::endl;
-
-	for (int i = 0; i < i2; i++)
-		ofs << linesAfterSVG[i] << std::endl;
-
-	for (int i = 0; i < i1; i++)
-		delete[] linesBeforeSVG[i];
-	delete[] linesBeforeSVG;
-
-	for (int i = 0; i < i2; i++)
-		delete[] linesAfterSVG[i];
-	delete[] linesAfterSVG;
-
-	ofs.close();
 }
